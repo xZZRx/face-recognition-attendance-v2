@@ -14,7 +14,7 @@ import hashlib
 
 # Page config for mobile responsiveness
 st.set_page_config(
-    page_title="College Event Attendance System",
+    page_title="TCGC Event Attendance System",
     page_icon="🎓",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -33,12 +33,13 @@ def get_db_connection():
                 port=st.secrets["database"].get("port", 3306)
             )
         else:
-            return mysql.connector.connect(
-                host="localhost",
-                user="root",
-                password="",
-                database="attendance_system"
-            )
+          return mysql.connector.connect(
+            host=os.getenv("DB_HOST", "localhost"),
+            user=os.getenv("DB_USER", "root"),
+            password=os.getenv("DB_PASSWORD", ""),
+            database=os.getenv("DB_NAME", "attendance_system"),
+            port=int(os.getenv("DB_PORT", 3306))
+        )
     except Exception as e:
         st.error(f"Database connection failed: {e}")
         return None
@@ -100,7 +101,7 @@ def hash_password(password):
 def check_login(username, password):
     admin_credentials = {
         "admin": hash_password("admin123"),
-        "teacher": hash_password("teacher123")
+        
     }
     return admin_credentials.get(username) == hash_password(password)
 
@@ -109,10 +110,10 @@ def login_page():
     st.markdown("""
     <div style="text-align: center; margin-bottom: 2rem;">
         <h1 style="color: #667eea; font-size: 2.5rem; margin-bottom: 0.5rem;">
-            🎓 College Event Attendance System
+            🎓 TCGC Event Attendance System
         </h1>
         <p style="color: #666; font-size: 1.1rem; margin: 0;">
-            AI-Powered Face Recognition for Student Attendance
+            Face Recognition for Student Attendance
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -375,8 +376,8 @@ col_header_left, col_header_right = st.columns([5, 1])
 with col_header_left:
     st.markdown(f"""
     <div class="header-container" style="margin-bottom: 0;">
-        <h1 class="header-title">🎓 College Event Attendance System</h1>
-        <p class="header-subtitle">AI-Powered Face Recognition for Student Attendance</p>
+        <h1 class="header-title">🎓 TCGC Event Attendance System</h1>
+        <p class="header-subtitle">Face Recognition for Student Attendance</p>
         <p class="header-subtitle">Welcome, {st.session_state.username}!</p>
     </div>
     """, unsafe_allow_html=True)
@@ -433,14 +434,17 @@ with tab1:
             
             with col1:
                 active_class = "active" if is_active else ""
+                event_desc = f"<p style='margin: 0.5rem 0 0 0; color: #666; font-size: 0.85rem;'>{event['event_description']}</p>" if event.get('event_description') else ""
+                active_badge = "" if is_active else ""  
+                
                 st.markdown(f"""
                 <div class="event-list-item {active_class}">
                     <h4 style="margin: 0; color: #333;">📅 {event['event_name']}</h4>
                     <p style="margin: 0.5rem 0 0 0; color: #666; font-size: 0.9rem;">
                         📆 {event['event_date']} | Created: {event['created_at'].strftime('%Y-%m-%d %H:%M')}
                     </p>
-                    {f"<p style='margin: 0.5rem 0 0 0; color: #666; font-size: 0.85rem;'>{event['event_description']}</p>" if event.get('event_description') else ""}
-                    {"<p style='margin: 0.5rem 0 0 0; color: #667eea; font-weight: bold; font-size: 0.9rem;'>✅ Currently Active</p>" if is_active else ""}
+                    {event_desc}
+                    {active_badge}
                 </div>
                 """, unsafe_allow_html=True)
             
@@ -449,6 +453,7 @@ with tab1:
                     st.session_state.current_event = event['event_name']
                     st.session_state.current_event_id = event['id']
                     st.success(f"✅ Event '{event['event_name']}' selected!")
+                    time.sleep(0.5)
                     st.rerun()
             
             with col3:
@@ -1189,8 +1194,8 @@ with tab6:
 st.markdown("---")
 st.markdown(f"""
 <div style='text-align: center; color: #666;'>
-    <p>🎓 College Event Attendance System - Enhanced Version with Event Management</p>
-    <p>Built with Streamlit • OpenCV • MySQL • AI-Powered Recognition</p>
+    <p>🎓 TCGC Event Attendance System - Enhanced Version with Event Management</p>
+    <p>Built with Streamlit • OpenCV • MySQL</p>
     <p>Current Event: <strong>{st.session_state.current_event or 'Not Set'}</strong> | 
        Logged in as: <strong>{st.session_state.username}</strong></p>
 </div>
